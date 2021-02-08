@@ -28,6 +28,7 @@ from .models import (
 DEFAULT_MAX_INTERVAL = 5  # seconds
 
 DEFAULT_BEAT_DBURI = 'sqlite:///schedule.db'
+DEFAULT_POSTGRES_SCHEMA = 'public'
 
 ADD_ENTRY_ERROR = """\
 Cannot add entry %r to database schedule: %r. Contents: %r
@@ -295,7 +296,9 @@ class DatabaseScheduler(Scheduler):
         self.app = kwargs['app']
         self.dburi = kwargs.get('dburi') or self.app.conf.get(
             'beat_dburi') or DEFAULT_BEAT_DBURI
-        self.engine, self.Session = session_manager.create_session(self.dburi)
+        self.postgres_shema = kwargs.get('postgres_schema') or self.app.conf.get(
+            'beat_postgres_schema') or DEFAULT_POSTGRES_SCHEMA
+        self.engine, self.Session = session_manager.create_session(self.dburi, self.postgres_shema)
         session_manager.prepare_models(self.engine)
 
         self._dirty = set()

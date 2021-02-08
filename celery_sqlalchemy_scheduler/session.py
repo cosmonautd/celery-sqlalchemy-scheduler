@@ -42,18 +42,22 @@ class SessionManager(object):
     def _after_fork(self):
         self.forked = True
 
-    def get_engine(self, dburi, **kwargs):
+    def get_engine(self, dburi, schema, **kwargs):
         if self.forked:
             try:
                 return self._engines[dburi]
             except KeyError:
                 engine = self._engines[dburi] = create_engine(dburi, **kwargs)
-                return engine
         else:
-            return create_engine(dburi, poolclass=NullPool)
+            engine = create_engine(dburi, poolclass=NullPool)
 
-    def create_session(self, dburi, short_lived_sessions=False, **kwargs):
-        engine = self.get_engine(dburi, **kwargs)
+        if engine.dialect.name == 'postgresql':
+            engine = engine.execution_options(schema_translate_map={None: schema})
+
+        return engine
+
+    def create_session(self, dburi, schema, short_lived_sessions=False, **kwargs):
+        engine = self.get_engine(dburi, schema, **kwargs)
         if self.forked:
             if short_lived_sessions or dburi not in self._sessions:
                 self._sessions[dburi] = sessionmaker(bind=engine)
