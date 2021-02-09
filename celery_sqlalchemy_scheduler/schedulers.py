@@ -180,11 +180,12 @@ class ModelEntry(ScheduleEntry):
             # change the fields we care about.
             obj = session.query(PeriodicTask).get(self.model.id)
 
-            for field in self.save_fields:
-                setattr(obj, field, getattr(self.model, field))
-            for field in fields:
-                setattr(obj, field, getattr(self.model, field))
-            session.add(obj)
+            if obj:
+                for field in self.save_fields:
+                    setattr(obj, field, getattr(self.model, field))
+                for field in fields:
+                    setattr(obj, field, getattr(self.model, field))
+                session.add(obj)
             session.commit()
 
     @classmethod
