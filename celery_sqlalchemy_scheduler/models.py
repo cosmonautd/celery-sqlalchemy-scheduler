@@ -178,7 +178,7 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
 
     id = sa.Column(sa.Integer, primary_key=True)
     last_update = sa.Column(
-        sa.DateTime(timezone=True), nullable=False, default=dt.datetime.now)
+        sa.DateTime(timezone=True), nullable=False, default=dt.datetime.now(dt.timezone.utc))
 
     @classmethod
     def changed(cls, mapper, connection, target):
@@ -201,11 +201,11 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
                                where(PeriodicTaskChanged.id == 1).limit(1))
         if not s:
             s = connection.execute(insert(PeriodicTaskChanged),
-                                   last_update=dt.datetime.now())
+                                   last_update=dt.datetime.now(dt.timezone.utc))
         else:
             s = connection.execute(update(PeriodicTaskChanged).
                                    where(PeriodicTaskChanged.id == 1).
-                                   values(last_update=dt.datetime.now()))
+                                   values(last_update=dt.datetime.now(dt.timezone.utc)))
 
     @classmethod
     def last_change(cls, session):
